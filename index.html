@@ -1,1 +1,75 @@
-Hello World
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <!-- This example requires Tailwind CSS v2.0+ -->
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6 flex flex-col">
+            <!-- Content goes here -->
+            <div>
+                <label for="key" class="sr-only">Your Private Key</label>
+                <input type="text" name="key" id="key"
+                    class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+            </div>
+            <button onclick="signTx()" type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign Transactions</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.5.4/ethers.umd.min.js"
+        integrity="sha512-xmbPx0riylir51GhTZCFd20yS7NYZNpfDTbEWBjDRzs+UaGb2RyjtASTVtF2ydQWp3xkso9j4sJj39PdSH8/EA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        const stakingABI = require('https://diversified-validator-network.github.io/moonbeam-staking-abi.js').stakingABI;
+        const ethers = require('ethers');
+
+        const GLMR_UNIT = '000000000000000000'
+        const collatorAccount = '0xAb4B115b2D23EF8DA7b0aa54FC074fB4C6886441'
+        const amount = '2' + GLMR_UNIT
+
+        const providerURL = "https://rpc.api.moonbeam.network";
+        // Define Provider
+        const provider = new ethers.providers.StaticJsonRpcProvider(providerURL, {
+            chainId: 1284,
+            name: 'moonbeam'
+        });
+        const stakingContract = new Contract(
+                STAKING_PRECOMPILE, // contract address
+                stakingABI, // ABI file
+                ethSigner
+            );
+
+        function signTx() {
+
+            const privateKey = document.getElementById("key").value;
+            const txData = stakingContract.populateTransaction
+                .delegator_bond_more(collatorAccount, amount);
+            console.log('txData', txData)
+            const transaction = {
+                ...txData,
+                nonce: 3,
+                chainId: 1284
+            }
+            console.log('transaction', transaction)
+
+            // Create Wallet
+            let wallet = new ethers.Wallet(privateKey, provider);
+            // Create Tx Object
+            // sign and serialize the transaction 
+            let rawTransaction = await wallet.signTransaction(transaction).then(ethers.utils.serializeTransaction(transaction));
+            // print the raw transaction hash
+            console.log('Raw txhash string ' + rawTransaction);
+        }
+
+
+    </script>
+
+</body>
+
+</html>
