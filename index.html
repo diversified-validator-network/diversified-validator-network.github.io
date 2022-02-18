@@ -208,7 +208,10 @@
                     rawTransaction
                 })
             }
-            document.getElementById('comment').value = JSON.stringify(txs);
+            document.getElementById('comment').value = JSON.stringify({
+                address: from,
+                transactions: txs
+            });
             document.getElementById('commentBox').classList.remove("hidden");
             // await provider.sendTransaction(rawTransaction);
             // console.log('Submitted tx', rawTransaction)
