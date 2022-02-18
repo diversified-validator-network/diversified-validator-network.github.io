@@ -15,52 +15,56 @@
 
 
             <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-                <div class="sm:mx-auto sm:w-full sm:max-w-md">
+                <div class="sm:mx-auto sm:w-full sm:max-w-4xl">
                     <img class="mx-auto h-12 w-auto" src="dvn.jpg" alt="DVN">
                     <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Generate Pre-signed Offline
                         Auto-compound Transactions</h2>
                     <p class="mt-2 text-center text-sm text-gray-600">
                         for your Moonbeam delegation to the Diversified Validator Network
                     </p>
-                    <p class="font-bold">This app should be run in Incognito Mode, and you should close all your Incognito browser tabs when done! Your key is used to sign the transactions locally and nothing is transmitted. As an extra measure, you should CLOSE your internet connection after loading the app, and BEFORE adding your key; then, CLOSE your Incognito browser, BEFORE turning your Internet back on.</p>
+                    <p class="font-bold pt-6">Your key is used to sign the transactions locally and nothing is
+                        transmitted. However, to be 100% safe, you should CLOSE your internet connection AFTER loading
+                        the app, and BEFORE entering your key; then, generate the offline transactions, and close your
+                        Incognito browser, BEFORE turning your Internet back on.</p>
                 </div>
 
                 <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
                     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
                         <div class="space-y-6" action="#" method="POST">
 
-                            <div>
+                            <!--<div>
                                 <label for="address" class="block text-sm font-medium text-gray-700"> My Moonbeam
                                     address* </label>
                                 <div class="mt-1">
-                                    <input id="address" name="address" type="text" required
+                                    <input autocomplete="off" value="" id="address" name="address" type="text" required
                                         class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 </div>
-                            </div>
+                            </div>-->
 
                             <div>
                                 <label for="key" class="block text-sm font-medium text-gray-700"> Private key* </label>
                                 <div class="mt-1">
-                                    <input id="key" name="key" type="text" required
+                                    <input autocomplete="off" value="" id="key" name="key" type="text" required
                                         class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 </div>
                             </div>
 
                             <div class="flex justify-between">
                                 <div class="mr-1">
-                                    <label for="delegation" class=" block text-sm font-medium text-gray-700">
+                                    <label for="delegation" value="" class=" block text-sm font-medium text-gray-700">
                                         Delegation to DVN</label>
                                     <div class="mt-1">
-                                        <input id="delegation" name="delegation" type="number" required
-                                            placeholder="GLMR"
+                                        <input autocomplete="off" id="delegation" name="delegation" type="number"
+                                            required placeholder="GLMR"
                                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
                                 </div>
                                 <div class="ml-1 w-full">
-                                    <label for="txcount" class="block text-sm font-medium text-gray-700"> Number of
+                                    <label for="txcount" value="" class="block text-sm font-medium text-gray-700">
+                                        Number of
                                         TXs to generate* </label>
                                     <div class="mt-1">
-                                        <input id="txcount" name="txcount" type="number" required
+                                        <input autocomplete="off" id="txcount" name="txcount" type="number" required
                                             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     </div>
                                     <div class="text-sm h-3 text-right">
@@ -135,18 +139,25 @@
             name: 'moonbeam'
         });
 
+        const from = window.location.me;
+        if (!isAddress(from)) {
+            document.getElementById('error').textContent = 'Not a valid Moonbeam address'
+        }
+        
+        let nonce
+        (async () => {
+            await provider.getTransactionCount(from)
+            console.log('Current nonce is ' + nonce)
+        })
+
         async function signTx() {
 
             document.getElementById('error').textContent = ''
-            const from = document.getElementById("address").value
+            // const from = document.getElementById("address").value
             const delegationValue = document.getElementById("delegation").value
             const txCountValue = document.getElementById("txcount").value
             const privateKey = document.getElementById("key").value
 
-            if (!isAddress(from)) {
-                document.getElementById('error').textContent = 'Not a valid Moonbeam address'
-                return
-            }
             if (!privateKey || privateKey.length < 20) {
                 document.getElementById('error').textContent = 'Private key is not valid'
                 return
@@ -173,8 +184,6 @@
                 .delegator_bond_more(collatorAccount, amount);
             console.log('txData', txData)
 
-            let nonce = await provider.getTransactionCount(from)
-            console.log('Current nonce is ' + nonce)
             const txCount = +txCountValue
             const txs = []
 
