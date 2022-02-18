@@ -1,4 +1,4 @@
-export const stakingABI = [
+var stakingABI = [
     {
         "inputs": [],
         "name": "cancel_candidate_bond_less",

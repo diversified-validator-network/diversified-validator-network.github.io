@@ -11,27 +11,121 @@
     <!-- This example requires Tailwind CSS v2.0+ -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6 flex flex-col">
-            <!-- Content goes here -->
-            <div>
-                <label for="key" class="sr-only">Your Private Key</label>
-                <input type="text" name="key" id="key"
-                    class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+
+
+
+            <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+                <div class="sm:mx-auto sm:w-full sm:max-w-md">
+                    <img class="mx-auto h-12 w-auto" src="dvn.jpg" alt="DVN">
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Generate Pre-signed Offline
+                        Auto-compound Transactions</h2>
+                    <p class="mt-2 text-center text-sm text-gray-600">
+                        for your Moonbeam delegation to the Diversified Validator Network
+                    </p>
+                </div>
+
+                <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
+                    <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                        <div class="space-y-6" action="#" method="POST">
+
+                            <div>
+                                <label for="address" class="block text-sm font-medium text-gray-700"> My Moonbeam
+                                    address* </label>
+                                <div class="mt-1">
+                                    <input id="address" name="address" type="text" required
+                                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="key" class="block text-sm font-medium text-gray-700"> Private key* </label>
+                                <div class="mt-1">
+                                    <input id="key" name="key" type="text" required
+                                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between">
+                                <div class="mr-1">
+                                    <label for="delegation" class=" block text-sm font-medium text-gray-700">
+                                        Delegation to DVN</label>
+                                    <div class="mt-1">
+                                        <input id="delegation" name="delegation" type="number" required
+                                            placeholder="GLMR"
+                                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                </div>
+                                <div class="ml-1 w-full">
+                                    <label for="txcount" class="block text-sm font-medium text-gray-700"> Number of
+                                        TXs to generate* </label>
+                                    <div class="mt-1">
+                                        <input id="txcount" name="txcount" type="number" required
+                                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div class="text-sm h-3 text-right">
+                                        <span id="recomendedPeriods"></span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="ml-1 w-full font-bold text-center text-red-500" id="error">
+
+                            </div>
+
+                            <div>
+                                <button onclick="signTx()"
+                                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Generate
+                                    Offline Transactions</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <div class="relative">
+                                <div class="absolute inset-0 flex items-center">
+                                    <div class="w-full border-t border-gray-300"></div>
+                                </div>
+                                <div class="relative flex justify-center text-sm">
+                                    <span class="px-2 bg-white text-gray-500"> ATTENTION </span>
+                                </div>
+                            </div>
+                            <div class="pt-2">
+                                You should almost NEVER enter your private key on a form like this.
+                                Before using this service make sure you watch this video to fully understand what you
+                                are doing.
+                            </div>
+
+                            <div class="mt-6 hidden" id="commentBox">
+                                <label for="comment" class="block text-sm font-medium text-gray-700">Right-click, select
+                                    all, and copy the transactions</label>
+                                <label for="comment" class="block text-sm font-medium text-gray-700">Go to stakeglmr.com
+                                    and paste into the Auto-compound TX field</label>
+                                <div class="mt-1">
+                                    <textarea rows="4" name="comment" id="comment"
+                                        class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button onclick="signTx()" type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign Transactions</button>
         </div>
+
+    </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.5.4/ethers.umd.min.js"
         integrity="sha512-xmbPx0riylir51GhTZCFd20yS7NYZNpfDTbEWBjDRzs+UaGb2RyjtASTVtF2ydQWp3xkso9j4sJj39PdSH8/EA=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <script>
-        const stakingABI = require('https://diversified-validator-network.github.io/moonbeam-staking-abi.js').stakingABI;
-        const ethers = require('ethers');
+    <script type="text/javascript" src="staking_abi.js"></script>
 
-        const GLMR_UNIT = '000000000000000000'
-        const collatorAccount = '0xAb4B115b2D23EF8DA7b0aa54FC074fB4C6886441'
-        const amount = '2' + GLMR_UNIT
+    <!-- TRANSACTION GENERATION SCRIPT-->
+    <script>
+
+        const stakingPrecompileAddress = '0x0000000000000000000000000000000000000800'
+        const collatorAccount = '0x62Ec573d52ECc9cDD6ed93C00a2F85Bc657878B3' // DVN collator account
+        const longtermAPR = 22
 
         const providerURL = "https://rpc.api.moonbeam.network";
         // Define Provider
@@ -39,35 +133,114 @@
             chainId: 1284,
             name: 'moonbeam'
         });
-        const stakingContract = new Contract(
-                STAKING_PRECOMPILE, // contract address
+
+        async function signTx() {
+
+            document.getElementById('error').textContent = ''
+            const from = document.getElementById("address").value
+            const delegationValue = document.getElementById("delegation").value
+            const txCountValue = document.getElementById("txcount").value
+            const privateKey = document.getElementById("key").value
+
+            if (!isAddress(from)) {
+                document.getElementById('error').textContent = 'Not a valid Moonbeam address'
+                return
+            }
+            if (!privateKey || privateKey.length < 20) {
+                document.getElementById('error').textContent = 'Private key is not valid'
+                return
+            }
+            if (!delegationValue || +delegationValue < 500) {
+                document.getElementById('error').textContent = 'Minimum delegation is 500'
+                return
+            }
+            if (!txCountValue || +txCountValue < 5) {
+                document.getElementById('error').textContent = 'Minimum transaction count is 5'
+                return
+            }
+
+            const stakingContract = new ethers.Contract(
+                stakingPrecompileAddress, // contract address
                 stakingABI, // ABI file
-                ethSigner
+                provider
             );
-
-        function signTx() {
-
-            const privateKey = document.getElementById("key").value;
-            const txData = stakingContract.populateTransaction
+            const amount = Math.round(
+                1000000 * 1 / 365 * (+delegationValue) * longtermAPR / 100
+            ) + '00000000000'
+            console.log('amount', amount)
+            const txData = await stakingContract.populateTransaction
                 .delegator_bond_more(collatorAccount, amount);
             console.log('txData', txData)
-            const transaction = {
-                ...txData,
-                nonce: 3,
-                chainId: 1284
-            }
-            console.log('transaction', transaction)
 
-            // Create Wallet
-            let wallet = new ethers.Wallet(privateKey, provider);
-            // Create Tx Object
-            // sign and serialize the transaction 
-            let rawTransaction = await wallet.signTransaction(transaction).then(ethers.utils.serializeTransaction(transaction));
-            // print the raw transaction hash
-            console.log('Raw txhash string ' + rawTransaction);
+            let nonce = await provider.getTransactionCount(from)
+            console.log('Current nonce is ' + nonce)
+            const txCount = +txCountValue
+            const txs = []
+
+            for (let txCounter = 0; txCounter < +txCount; txCounter++) {
+                const transaction = {
+                    ...txData,
+                    to: stakingPrecompileAddress,
+                    nonce: ethers.utils.hexlify(+nonce + +txCounter),
+                    value: '0x00',
+                    gasPrice: 100000000000,
+                    gasLimit: 61378,
+                }
+                console.log('transaction', transaction)
+
+                let wallet = new ethers.Wallet(privateKey, provider);
+                let rawTransaction = await wallet.signTransaction(transaction).then(ethers.utils.serializeTransaction(transaction));
+                console.log('Raw txhash string ' + rawTransaction);
+                txs.push({
+                    nonce: nonce + txCounter,
+                    rawTransaction
+                })
+            }
+            document.getElementById('comment').value = JSON.stringify(txs);
+            document.getElementById('commentBox').classList.remove("hidden");
+            // await provider.sendTransaction(rawTransaction);
+            // console.log('Submitted tx', rawTransaction)
         }
 
+        function isAddress(address) {
+            try {
+                ethers.utils.getAddress(address)
+                return true
+            } catch {
+                return false
+            }
+        }
 
+        function isPrivateKey(pk) {
+            try {
+                const w = new ethers.Wallet(pk)
+                return true
+            } catch {
+                return false
+            }
+        }
+    </script>
+
+    <!--RECOMMENDED TXS CALCULATION SCRIPT-->
+    <script>
+        const rp = {
+            delegations: [500, 1000, 2000, 3000, 4000, 5000, 10000, 20000, 40000, 50000, 100000],
+            periods: [48, 68, 98, 120, 139, 155, 220, 312, 442, 494, 699]
+        }
+
+        function calculateRecommendedPeriod(delegation) {
+            for (let i = 1; i < rp.delegations.length; i++) {
+                if (delegation < rp.delegations[i] && delegation >= rp.delegations[i - 1]) {
+                    return Math.round(1.1 * 1 / 2 * (rp.delegations[i] * rp.periods[i] + rp.delegations[i - 1] * rp.periods[i - 1]) / (rp.delegations[i] + rp.delegations[i - 1]))
+                }
+            }
+            return undefined
+        }
+
+        document.getElementById("delegation").addEventListener('input', function (evt) {
+            const recomendedPeriods = calculateRecommendedPeriod(document.getElementById("delegation").value)
+            document.getElementById("recomendedPeriods").textContent = recomendedPeriods ? recomendedPeriods + ' txs will last about 6 months' : '';
+        });
     </script>
 
 </body>
