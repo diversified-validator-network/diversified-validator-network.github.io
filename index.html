@@ -139,7 +139,9 @@
             name: 'moonbeam'
         });
 
-        const from = window.location.me;
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const from = urlParams.get('me')
         if (!isAddress(from)) {
             document.getElementById('error').textContent = 'Not a valid Moonbeam address'
         }
