@@ -23,9 +23,9 @@
                         for your Moonbeam delegation to the Diversified Validator Network
                     </p>
                     <p class="font-bold pt-6">Your key is used to sign the transactions locally and nothing is
-                        transmitted. However, to be 100% safe, you should CLOSE your internet connection AFTER loading
-                        the app, and BEFORE entering your key; then, generate the offline transactions, and close your
-                        Incognito browser, BEFORE turning your Internet back on.</p>
+                        transmitted. However, to be 100% safe, you should 1) load the app in Chrome-Incognito, 2) CLOSE your internet connection,
+                        3) enter your private key, 4) generate the offline transactions and copy them, and 4) close your
+                        Incognito browser, BEFORE turning your internet back on.</p>
                 </div>
 
                 <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
@@ -148,9 +148,9 @@
         
         let nonce
         (async () => {
-            await provider.getTransactionCount(from)
+            nonce = await provider.getTransactionCount(from)
             console.log('Current nonce is ' + nonce)
-        })
+        })()
 
         async function signTx() {
 
