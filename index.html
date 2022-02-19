@@ -172,8 +172,8 @@
                 document.getElementById('error').textContent = 'Private key is not valid'
                 return
             }
-            if (!delegationValue || +delegationValue < 500) {
-                document.getElementById('error').textContent = 'Minimum delegation is 500'
+            if (!delegationValue || +delegationValue < 300) {
+                document.getElementById('error').textContent = 'Minimum delegation is 300'
                 return
             }
             if (!txCountValue || +txCountValue < 5 || +txCountValue > 200) {
@@ -187,7 +187,7 @@
                 provider
             );
             const amount = Math.round(
-                1000000 * (1 / Math.min(rp[txCountValue], 365)) * (+delegationValue) * longtermAPR / 100
+                1000000 * (1 / Math.min(calculateRecommendedPeriod(delegationValue)*2, 365)) * (+delegationValue) * longtermAPR / 100
             ) + '00000000000'
             console.log('amount', amount)
             const txData = await stakingContract.populateTransaction
@@ -244,15 +244,11 @@
                 return false
             }
         }
-    </script>
-
-    <!--RECOMMENDED TXS CALCULATION SCRIPT-->
-    <script>
 
         function calculateRecommendedPeriod(delegation) {
             for (let i = 1; i < rp.delegations.length; i++) {
                 if (delegation < rp.delegations[i] && delegation >= rp.delegations[i - 1]) {
-                    return Math.round(1.1 * 1 / 2 * (rp.delegations[i] * rp.periods[i] + rp.delegations[i - 1] * rp.periods[i - 1]) / (rp.delegations[i] + rp.delegations[i - 1]))
+                    return Math.round(1 / 2 * (rp.delegations[i] * rp.periods[i] + rp.delegations[i - 1] * rp.periods[i - 1]) / (rp.delegations[i] + rp.delegations[i - 1]))
                 }
             }
             return undefined
