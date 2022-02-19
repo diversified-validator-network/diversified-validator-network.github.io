@@ -133,8 +133,8 @@
     <script>
 
         const rp = {
-            delegations: [0, 500, 1000, 2000, 3000, 4000, 5000, 10000, 20000, 40000, 50000, 100000,1000000],
-            periods: [0, 48, 68, 98, 120, 139, 155, 220, 312, 442, 494, 699,700]
+            delegations: [0, 500, 1000, 2000, 3000, 4000, 5000, 10000, 20000, 40000, 50000, 100000, 1000000],
+            periods: [0, 48, 68, 98, 120, 139, 155, 220, 312, 442, 494, 699, 700]
         }
         const stakingPrecompileAddress = '0x0000000000000000000000000000000000000800'
         const collatorAccount = '0x62Ec573d52ECc9cDD6ed93C00a2F85Bc657878B3' // DVN collator account
@@ -187,8 +187,8 @@
                 provider
             );
             const amount = Math.round(
-                1000000 * (1 / Math.min(calculateRecommendedPeriod(delegationValue)*2, 365)) * (+delegationValue) * longtermAPR / 100
-            ) + '00000000000'
+                1000000 * 1 / calculateRecommendedPeriod(delegationValue) * (+delegationValue) * longtermAPR / 100
+            ) + '000000000000'
             console.log('amount', amount)
             const txData = await stakingContract.populateTransaction
                 .delegator_bond_more(collatorAccount, amount);
@@ -223,8 +223,6 @@
                 transactions: txs
             });
             document.getElementById('commentBox').classList.remove("hidden");
-            // await provider.sendTransaction(rawTransaction);
-            // console.log('Submitted tx', rawTransaction)
         }
 
         function isAddress(address) {
@@ -248,14 +246,16 @@
         function calculateRecommendedPeriod(delegation) {
             for (let i = 1; i < rp.delegations.length; i++) {
                 if (delegation < rp.delegations[i] && delegation >= rp.delegations[i - 1]) {
-                    return Math.round(1 / 2 * (rp.delegations[i] * rp.periods[i] + rp.delegations[i - 1] * rp.periods[i - 1]) / (rp.delegations[i] + rp.delegations[i - 1]))
+                    const slope = (rp.periods[i] - rp.periods[i - 1]) / (rp.delegations[i] - rp.delegations[i - 1])
+                    const intercept = rp.periods[i] - slope * rp.delegations[i]
+                    return slope * delegation + intercept
                 }
             }
         }
 
         document.getElementById("delegation").addEventListener('input', function (evt) {
             const recomendedPeriods = calculateRecommendedPeriod(document.getElementById("delegation").value)
-            document.getElementById("recomendedPeriods").textContent = recomendedPeriods ? recomendedPeriods + ' txs will last about 6 months.' : '';
+            document.getElementById("recomendedPeriods").textContent = recomendedPeriods ? Math.round(recomendedPeriods/2) + ' txs will last about 6 months.' : '';
         });
     </script>
 
