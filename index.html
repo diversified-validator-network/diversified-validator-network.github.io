@@ -20,30 +20,23 @@
                     <p class="mt-2 text-center text-sm text-gray-600">
                         for your Moonbeam delegation to the Diversified Validator Network
                     </p>
-                    <p class="pt-6">Your key is used to sign the transactions locally. For peace-of-mind, you should 1)
-                        load the app in Chrome, Incognito mode, 2) close your internet connection,
+                    <p class="pt-6">
+                        If you understand javascript, please audit this app's <a target="_blank" class="text-pink-500" href="https://github.com/diversified-validator-network/diversified-validator-network.github.io">repository</a> 
+                        to confirm it does NOT leak the private key. If it does, yell as loud as you can on Telegram and Discord.
+                        If you don't understand JS, then <b>wait at least until Feb 28th 2022</b> before using this app, until others review the code.
+                        This repository will not be updated again after Feb 20th 2022, to maintain its audited status.
+                        If you are impatient, irresponsible, and illogical, (or if it's after Feb 28th 2022 and the app hasn't been modified) <button onclick="unlock()" class="cursor-pointer text-pink-500">click here</button>.
+                    </p>
+                    <p id="directions" class="pt-6 hidden">Your key is used to sign the transactions locally. For peace-of-mind, you should 1)
+                        load the app in Chrome, <u>incognito mode</u>, 2) close your internet connection,
                         3) enter your private key, 4) generate the offline transactions and copy them, and 4) close your
-                        browser, <u>before</u> turning your internet back on. Only use this app if you trust
-                        StakeGlmr.com | DVN and/or can read the <a
-                            href="https://github.com/diversified-validator-network/diversified-validator-network.github.io"
-                            target="_black" class="font-bold">Github code</a>, or trust somebody else who can.
-                        This app is a live Github repo so that anyone can check when was the last date the app was
-                        modified and what changed.
+                        browser, <u>before</u> turning your internet back on.
                     </p>
                 </div>
 
-                <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
+                <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg locked-form hidden" id="locked-form">
                     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
                         <div class="space-y-6" action="#" method="POST">
-
-                            <!--<div>
-                                <label for="address" class="block text-sm font-medium text-gray-700"> My Moonbeam
-                                    address* </label>
-                                <div class="mt-1">
-                                    <input autocomplete="off" value="" id="address" name="address" type="text" required
-                                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                </div>
-                            </div>-->
 
                             <div>
                                 <label for="key" class="block text-sm font-medium text-gray-700"> Private key* </label>
@@ -84,6 +77,7 @@
 
                             <div>
                                 <button onclick="signTx()"
+                                    id="submit-button"
                                     class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Generate
                                     Offline Transactions</button>
                             </div>
@@ -139,9 +133,7 @@
         const stakingPrecompileAddress = '0x0000000000000000000000000000000000000800'
         const collatorAccount = '0x62Ec573d52ECc9cDD6ed93C00a2F85Bc657878B3' // DVN collator account
         const longtermAPR = 22
-
         const providerURL = "https://rpc.api.moonbeam.network";
-        // Define Provider
         const provider = new ethers.providers.StaticJsonRpcProvider(providerURL, {
             chainId: 1284,
             name: 'moonbeam'
@@ -155,15 +147,15 @@
         }
 
         let nonce
-        (async () => {
-            nonce = await provider.getTransactionCount(from)
+        provider.getTransactionCount(from).then( n => {
+            nonce = n
             console.log('Current nonce is ' + nonce)
-        })()
+        })
 
         async function signTx() {
 
+            // Fet form inputs values and validate
             document.getElementById('error').textContent = ''
-            // const from = document.getElementById("address").value
             const delegationValue = document.getElementById("delegation").value
             const txCountValue = document.getElementById("txcount").value
             const privateKey = document.getElementById("key").value
@@ -181,22 +173,23 @@
                 return
             }
 
+            // Create Staking Contract instance in ethers
             const stakingContract = new ethers.Contract(
                 stakingPrecompileAddress, // contract address
                 stakingABI, // ABI file
                 provider
             );
+
+            // Create delegation transaction template
             const amount = Math.round(
                 1000000 * 1 / calculateRecommendedPeriod(delegationValue) * (+delegationValue) * longtermAPR / 100
             ) + '000000000000'
-            console.log('amount', amount)
             const txData = await stakingContract.populateTransaction
                 .delegator_bond_more(collatorAccount, amount);
-            console.log('txData', txData)
 
+            // Make many delegation transactions from template, each one with a different nonce
             const txCount = +txCountValue
             const txs = []
-
             for (let txCounter = 0; txCounter < +txCount; txCounter++) {
                 const transaction = {
                     ...txData,
@@ -206,11 +199,11 @@
                     gasPrice: 100000000000,
                     gasLimit: 61378,
                 }
-                console.log('transaction', transaction)
 
                 let wallet = new ethers.Wallet(privateKey, provider);
                 let rawTransaction = await wallet.signTransaction(transaction).then(ethers.utils.serializeTransaction(transaction));
-                console.log('Raw txhash string ' + rawTransaction);
+
+                // store the raw transaction and metadata in an array
                 txs.push({
                     nonce: nonce + txCounter,
                     collator: collatorAccount,
@@ -218,6 +211,8 @@
                     amount
                 })
             }
+
+            // show the transactions to the user
             document.getElementById('comment').value = JSON.stringify({
                 address: from,
                 transactions: txs
@@ -225,6 +220,13 @@
             document.getElementById('commentBox').classList.remove("hidden");
         }
 
+        // unlock form
+        function unlock() {
+            document.getElementById('directions').classList.remove("hidden");
+            document.getElementById('locked-form').classList.remove("hidden");
+        }
+
+        // helper function to validate an ethereum address
         function isAddress(address) {
             try {
                 ethers.utils.getAddress(address)
@@ -234,6 +236,7 @@
             }
         }
 
+        // helper function to validate a private key
         function isPrivateKey(pk) {
             try {
                 const w = new ethers.Wallet(pk)
@@ -243,6 +246,7 @@
             }
         }
 
+        // the larger the delegation, the more frequent the compounding that maximizes eanrings (net of transaction costs)
         function calculateRecommendedPeriod(delegation) {
             for (let i = 1; i < rp.delegations.length; i++) {
                 if (delegation < rp.delegations[i] && delegation >= rp.delegations[i - 1]) {
@@ -257,6 +261,7 @@
             const recomendedPeriods = calculateRecommendedPeriod(document.getElementById("delegation").value)
             document.getElementById("recomendedPeriods").textContent = recomendedPeriods ? Math.round(recomendedPeriods/2) + ' txs will last about 6 months.' : '';
         });
+
     </script>
 
 </body>
