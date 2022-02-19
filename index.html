@@ -20,10 +20,15 @@
                     <p class="mt-2 text-center text-sm text-gray-600">
                         for your Moonbeam delegation to the Diversified Validator Network
                     </p>
-                    <p class="pt-6">Your key is used to sign the transactions locally. For peace-of-mind, you should 1) load the app in Chrome, Incognito mode, 2) close your internet connection,
+                    <p class="pt-6">Your key is used to sign the transactions locally. For peace-of-mind, you should 1)
+                        load the app in Chrome, Incognito mode, 2) close your internet connection,
                         3) enter your private key, 4) generate the offline transactions and copy them, and 4) close your
-                        browser, <u>before</u> turning your internet back on. Only use this app if you trust StakeGlmr.com | DVN and/or can read the <a href="https://github.com/diversified-validator-network/diversified-validator-network.github.io" target="_black" class="font-bold">Github code</a>, or trust somebody else who can.
-                        This app is a live Github repo so that anyone can check when was the last date the app was modified and what changed.
+                        browser, <u>before</u> turning your internet back on. Only use this app if you trust
+                        StakeGlmr.com | DVN and/or can read the <a
+                            href="https://github.com/diversified-validator-network/diversified-validator-network.github.io"
+                            target="_black" class="font-bold">Github code</a>, or trust somebody else who can.
+                        This app is a live Github repo so that anyone can check when was the last date the app was
+                        modified and what changed.
                     </p>
                 </div>
 
@@ -127,6 +132,10 @@
     <!-- TRANSACTION GENERATION SCRIPT-->
     <script>
 
+        const rp = {
+            delegations: [500, 1000, 2000, 3000, 4000, 5000, 10000, 20000, 40000, 50000, 100000],
+            periods: [48, 68, 98, 120, 139, 155, 220, 312, 442, 494, 699]
+        }
         const stakingPrecompileAddress = '0x0000000000000000000000000000000000000800'
         const collatorAccount = '0x62Ec573d52ECc9cDD6ed93C00a2F85Bc657878B3' // DVN collator account
         const longtermAPR = 22
@@ -144,7 +153,7 @@
         if (!isAddress(from)) {
             document.getElementById('error').textContent = 'Not a valid Moonbeam address'
         }
-        
+
         let nonce
         (async () => {
             nonce = await provider.getTransactionCount(from)
@@ -167,8 +176,8 @@
                 document.getElementById('error').textContent = 'Minimum delegation is 500'
                 return
             }
-            if (!txCountValue || +txCountValue < 5) {
-                document.getElementById('error').textContent = 'Minimum transaction count is 5'
+            if (!txCountValue || +txCountValue < 5 || +txCountValue > 200) {
+                document.getElementById('error').textContent = 'Minimum transaction count is 5 and maximum is 200'
                 return
             }
 
@@ -178,7 +187,7 @@
                 provider
             );
             const amount = Math.round(
-                1000000 * 1 / 365 * (+delegationValue) * longtermAPR / 100
+                1000000 * (1 / Math.min(rp[txCountValue], 365)) * (+delegationValue) * longtermAPR / 100
             ) + '00000000000'
             console.log('amount', amount)
             const txData = await stakingContract.populateTransaction
@@ -239,10 +248,6 @@
 
     <!--RECOMMENDED TXS CALCULATION SCRIPT-->
     <script>
-        const rp = {
-            delegations: [500, 1000, 2000, 3000, 4000, 5000, 10000, 20000, 40000, 50000, 100000],
-            periods: [48, 68, 98, 120, 139, 155, 220, 312, 442, 494, 699]
-        }
 
         function calculateRecommendedPeriod(delegation) {
             for (let i = 1; i < rp.delegations.length; i++) {
@@ -255,7 +260,7 @@
 
         document.getElementById("delegation").addEventListener('input', function (evt) {
             const recomendedPeriods = calculateRecommendedPeriod(document.getElementById("delegation").value)
-            document.getElementById("recomendedPeriods").textContent = recomendedPeriods ? recomendedPeriods + ' txs will last about 6 months' : '';
+            document.getElementById("recomendedPeriods").textContent = recomendedPeriods ? recomendedPeriods + ' txs will last about 6 months.' : '';
         });
     </script>
 
