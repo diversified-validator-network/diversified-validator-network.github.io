@@ -204,7 +204,9 @@
                 console.log('Raw txhash string ' + rawTransaction);
                 txs.push({
                     nonce: nonce + txCounter,
-                    rawTransaction
+                    collator: collatorAccount,
+                    rawTransaction,
+                    amount
                 })
             }
             document.getElementById('comment').value = JSON.stringify({
