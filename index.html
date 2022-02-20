@@ -7,12 +7,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
+<style>
+    .dimmed {
+        position: relative;
+    }
+
+    .dimmed:after {
+        content: " ";
+        z-index: 10;
+        display: block;
+        position: absolute;
+        height: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.5);
+    }
+</style>
+
 <body>
     <!-- This example requires Tailwind CSS v2.0+ -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6 flex flex-col">
 
-            <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+            <div class="min-h-full flex flex-col justify-center py-4 sm:px-6 lg:px-8">
                 <div class="sm:mx-auto sm:w-full sm:max-w-4xl">
                     <img class="mx-auto" src="dvn.jpg" alt="DVN">
                     <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Generate Pre-signed Offline
@@ -20,23 +38,45 @@
                     <p class="mt-2 text-center text-sm text-gray-600">
                         for your Moonbeam delegation to the Diversified Validator Network
                     </p>
-                    <p class="pt-6">
-                        If you understand javascript, please audit this app's <a target="_blank" class="text-pink-500" href="https://github.com/diversified-validator-network/diversified-validator-network.github.io">repository</a> 
-                        to confirm it does NOT leak the private key. If it does, yell as loud as you can on Telegram and Discord.
-                        If you don't understand JS, then <b>wait at least until Feb 28th 2022</b> before using this app, until others review the code.
-                        This repository will not be updated again after Feb 20th 2022, to maintain its audited status.
-                        If you are impatient, irresponsible, and illogical, (or if it's after Feb 28th 2022 and the app hasn't been modified) <button onclick="unlock()" class="cursor-pointer text-pink-500">click here</button>.
-                    </p>
-                    <p id="directions" class="pt-6 hidden">Your key is used to sign the transactions locally. For peace-of-mind, you should 1)
-                        load the app in Chrome, <u>incognito mode</u>, 2) close your internet connection,
-                        3) enter your private key, 4) generate the offline transactions and copy them, and 4) close your
-                        browser, <u>before</u> turning your internet back on.
-                    </p>
+                    <div id="audit-instructions">
+                        <p class="pt-6">
+                            This app uses your private key to generate multiple offline delegator-bond-more transactions
+                            in Moonbeam. The app returns the transactions in raw form and does NOT submit them to the
+                            network.
+                        </p>
+                        <p class="pt-2">
+                            The app is hosted on <a class="text-pink-500" target="_blank"
+                                href="https://github.com/diversified-validator-network/diversified-validator-network.github.io">Github</a>
+                            so that the code and change log can be reviewed.
+                            The app will be in AUDIT phase for 8 days, starting Feb 20th 2022. During this phase,
+                            developers can test, review the code, and warn users of security issues on Github.
+                            If any change is made to the Github code, the AUDIT phase will reset.
+                            If no changes are made (confirm by checking the last commit date on Github), then this app
+                            will unlock on March 1st 2022.
+                        </p>
+                    </div>
+                    <div id="unlocked-instructions" class="hidden">
+                        <p class="pt-6">
+                            Before using this app, make sure it has not been updated/changed for at least 8 days, by
+                            visiting its <a class="text-pink-500" target="_blank"
+                                href="https://github.com/diversified-validator-network/diversified-validator-network.github.io">Github
+                                repo</a>.
+                            Using this app assumes that you trust StakeGlmr.com enough to enter your private key in its
+                            software.
+                        </p>
+                        <p class="pt-2">Your key is used to sign the transactions locally. For
+                            peace-of-mind, you should 1)
+                            load the app in Chrome, <u>incognito mode</u>, 2) close your internet connection,
+                            3) enter your private key, 4) generate the offline transactions and copy them, and 4) close
+                            your
+                            browser, <u>before</u> turning your internet back on.
+                        </p>
+                    </div>
                 </div>
 
-                <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg locked-form hidden" id="locked-form">
+                <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg dimmed cursor-not-allowed" id="locked-form">
                     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                        <div class="space-y-6" action="#" method="POST">
+                        <div class="space-y-6">
 
                             <div>
                                 <label for="key" class="block text-sm font-medium text-gray-700"> Private key* </label>
@@ -76,8 +116,7 @@
                             </div>
 
                             <div>
-                                <button onclick="signTx()"
-                                    id="submit-button"
+                                <button onclick="signTx()" id="submit-button"
                                     class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Generate
                                     Offline Transactions</button>
                             </div>
@@ -125,6 +164,15 @@
 
     <!-- TRANSACTION GENERATION SCRIPT-->
     <script>
+        const today = new Date() / 1000;
+        var unlockDate = new Date(2022, 2, 28, 01, 00, 00, 00) / 1000;
+        if (today > unlockDate) {
+            // Unlock the app
+            document.getElementById('unlocked-instructions').classList.remove("hidden");
+            document.getElementById('audit-instructions').classList.add("hidden");
+            document.getElementById('locked-form').classList.remove("dimmed");
+            document.getElementById('locked-form').classList.remove("cursor-not-allowed");
+        }
 
         const rp = {
             delegations: [0, 500, 1000, 2000, 3000, 4000, 5000, 10000, 20000, 40000, 50000, 100000, 1000000],
@@ -147,7 +195,7 @@
         }
 
         let nonce
-        provider.getTransactionCount(from).then( n => {
+        provider.getTransactionCount(from).then(n => {
             nonce = n
             console.log('Current nonce is ' + nonce)
         })
@@ -220,12 +268,6 @@
             document.getElementById('commentBox').classList.remove("hidden");
         }
 
-        // unlock form
-        function unlock() {
-            document.getElementById('directions').classList.remove("hidden");
-            document.getElementById('locked-form').classList.remove("hidden");
-        }
-
         // helper function to validate an ethereum address
         function isAddress(address) {
             try {
@@ -259,7 +301,7 @@
 
         document.getElementById("delegation").addEventListener('input', function (evt) {
             const recomendedPeriods = calculateRecommendedPeriod(document.getElementById("delegation").value)
-            document.getElementById("recomendedPeriods").textContent = recomendedPeriods ? Math.round(recomendedPeriods/2) + ' txs will last about 6 months.' : '';
+            document.getElementById("recomendedPeriods").textContent = recomendedPeriods ? Math.round(recomendedPeriods / 2) + ' txs will last about 6 months.' : '';
         });
 
     </script>
